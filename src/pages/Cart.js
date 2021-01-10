@@ -118,7 +118,8 @@ const Cart = () => {
           <div className="content__items">
             {addedPizzas.map((pizza) => (
               <CartItem
-                key={pizza.items[0]}
+                // абсолютно уникальные значения для дальнейшего разделения пицц по тесту/размеру
+                key={Object.values(pizza.items[0]).join("")}
                 {...pizza.items[0]}
                 totalCount={pizza.totalCount}
                 totalPrice={pizza.totalPrice}

@@ -17,14 +17,14 @@ const getTotalSum = (obj, property) => {
   }, 0);
 };
 
-// для конкретного вида пицц
-const getTotalPrice = (arr) => arr.reduce((sum, pizza) => pizza.price + sum, 0);
+const getItemTotalPrice = (arr) =>
+  arr.reduce((sum, pizza) => pizza.price + sum, 0);
 
 const getCurrentItems = (oldItems, id, innerItems) => {
   const current = {
     items: innerItems,
     totalCount: innerItems.length,
-    totalPrice: getTotalPrice(innerItems),
+    totalPrice: getItemTotalPrice(innerItems),
   };
   return {
     ...oldItems,
@@ -67,21 +67,13 @@ const cart = (state = initialState, action) => {
         state.items[action.payload].items[0],
       ];
 
-      const newItems = {
-        ...state.items,
-        [action.payload]: {
-          items: currentPizzaItems,
-          totalCount: currentPizzaItems.length,
-          totalPrice: getTotalPrice(currentPizzaItems),
-        },
-      };
+      const currentItems = getCurrentItems(
+        state.items,
+        action.payload,
+        currentPizzaItems
+      );
 
-      return {
-        ...state,
-        items: newItems,
-        totalCount: getTotalSum(newItems, "items.length"),
-        totalPrice: getTotalSum(newItems, "totalPrice"),
-      };
+      return getCurrentState(state, currentItems);
     }
 
     case "MINUS_CART_ITEM": {
@@ -99,32 +91,15 @@ const cart = (state = initialState, action) => {
     }
 
     case "ADD_PIZZA_CART": {
-      const currentPizzaItems = state.items[action.payload.id]
-        ? [...state.items[action.payload.id].items, action.payload]
+      const { id } = action.payload;
+
+      const currentPizzaItems = state.items[id]
+        ? [...state.items[id].items, action.payload]
         : [action.payload];
 
-      const newItems = {
-        ...state.items,
-        [action.payload.id]: {
-          items: currentPizzaItems,
-          totalCount: currentPizzaItems.length,
-          totalPrice: getTotalPrice(currentPizzaItems),
-        },
-      };
+      const currentItems = getCurrentItems(state.items, id, currentPizzaItems);
 
-      // const allPizzas = [].concat(
-      //   ...Object.values(newItems).map((obj) => obj.items)
-      // );
-
-      return {
-        ...state,
-        items: newItems,
-        // Альтернатива: Object.values(newItems).reduce((len, el) => el.length + len, 0)
-        // totalCount: allPizzas.length,
-        // totalPrice: getTotalPrice(allPizzas),
-        totalCount: getTotalSum(newItems, "items.length"),
-        totalPrice: getTotalSum(newItems, "totalPrice"),
-      };
+      return getCurrentState(state, currentItems);
     }
     default:
       return state;
