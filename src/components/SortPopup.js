@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef, memo } from "react";
+import PropTypes from "prop-types";
 
-const SortPopup = memo(({ items }) => {
+const SortPopup = memo(({ activeSortType, items, onClickSortType }) => {
   const [visiblePopup, setVisiblePopup] = useState(false);
-  const [activeItem, setActiveItem] = useState(0);
   const sortRef = useRef();
+  const activeLabel = items.find((sort) => sort.type === activeSortType.type)
+    .name;
 
   const togglePopup = () => {
     setVisiblePopup(!visiblePopup);
@@ -13,8 +15,8 @@ const SortPopup = memo(({ items }) => {
     if (!e.path.includes(sortRef.current)) setVisiblePopup(false);
   };
 
-  const onSelectItem = (index) => {
-    setActiveItem(index);
+  const onSelectItem = (sortType) => {
+    onClickSortType(sortType);
     setVisiblePopup(false);
   };
 
@@ -39,7 +41,7 @@ const SortPopup = memo(({ items }) => {
           />
         </svg>
         <b>Сортировка по:</b>
-        <span onClick={togglePopup}>{items[activeItem].name}</span>
+        <span onClick={togglePopup}>{activeLabel}</span>
       </div>
       {visiblePopup && (
         <div className="sort__popup">
@@ -48,8 +50,8 @@ const SortPopup = memo(({ items }) => {
               items.map((sort, index) => (
                 <li
                   key={index}
-                  className={activeItem === index ? "active" : ""}
-                  onClick={() => onSelectItem(index)}
+                  className={activeSortType.type === sort.type ? "active" : ""}
+                  onClick={() => onSelectItem(sort)}
                 >
                   {sort.name}
                 </li>
@@ -60,5 +62,17 @@ const SortPopup = memo(({ items }) => {
     </div>
   );
 });
+
+SortPopup.defaultProps = {
+  activeSortType: null,
+  items: [],
+  onClickSortType: () => {},
+};
+
+SortPopup.propTypes = {
+  activeSortType: PropTypes.string,
+  items: PropTypes.arrayOf(PropTypes.object),
+  onClickSortType: PropTypes.func,
+};
 
 export default SortPopup;
