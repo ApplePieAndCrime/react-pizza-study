@@ -8,6 +8,7 @@ import {
 } from "../components";
 import { setCategory, setSortBy } from "../redux/actions/filters";
 import { fetchPizzas } from "../redux/actions/pizzas";
+import { addPizzaToCart } from "../redux/actions/cart";
 
 const categories = ["Мясные", "Вегерианская", "Гриль", "Острые", "Закрытые"];
 const sorts = [
@@ -19,10 +20,9 @@ const sorts = [
 const Home = () => {
   const dispatch = useDispatch();
   const pizzas = useSelector(({ pizzas }) => pizzas.items);
+  const cartItems = useSelector(({ cart }) => cart.items);
   const isLoaded = useSelector(({ pizzas }) => pizzas.isLoaded);
   const { category, sortBy } = useSelector(({ filters }) => filters);
-
-  useEffect(() => console.log("isLoaded", isLoaded), [isLoaded]);
 
   useEffect(() => {
     dispatch(fetchPizzas({ category, sortBy }));
@@ -36,6 +36,11 @@ const Home = () => {
 
   const onSelectSortBy = useCallback((sortType) => {
     dispatch(setSortBy(sortType));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleAddPizzaToCart = useCallback((pizza) => {
+    dispatch(addPizzaToCart(pizza));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -56,7 +61,14 @@ const Home = () => {
       <h2 className="content__title">Все пиццы</h2>
       <div className="content__items">
         {isLoaded
-          ? pizzas.map((pizza) => <PizzaBlock key={pizza.id} {...pizza} />)
+          ? pizzas.map((pizza) => (
+              <PizzaBlock
+                key={pizza.id}
+                onClickAddPizza={handleAddPizzaToCart}
+                addedCount={cartItems[pizza.id] && cartItems[pizza.id].length}
+                {...pizza}
+              />
+            ))
           : Array(12)
               .fill(0)
               .map((_, index) => <PizzaBlockPlaceholder key={index} />)}
